@@ -105,8 +105,7 @@ public class TestPet {
     @CsvSource({
             "313, Monika, available",
             "413, Buddy, pending",
-            "513, Deborah, sold",
-            "613, Marsel, happy"
+            "513, Deborah, sold"
     })
     @Feature("Pet")
     @Severity(SeverityLevel.CRITICAL)
@@ -139,5 +138,30 @@ public class TestPet {
                     assertEquals(pet.getStatus(), createdPet.getStatus(), "статус питомца не совпадает с ожидаемым");
                 }
         );
+    }
+        @Test
+        @Feature("Pet")
+        @Severity(SeverityLevel.CRITICAL)
+        @Owner("alexander andryukhin")
+        public void testAddPetWithInvalidStatus() {
+            Pet pet = new Pet();
+            pet.setId(444);
+            pet.setName("Marsel");
+            pet.setStatus("happy");
+
+            Response response = step("Отправить POST запрос на добавление питомца с несуществующим статусом", () ->
+                    given()
+                            .contentType(ContentType.JSON)
+                            .header("Accept", "application/json")
+                            .body(pet)
+                            .when()
+                            .post(BASE_URL + "/pet"));
+
+            String responseBody = response.getBody().asString();
+
+            step("Проверить, что статус-код ответа == 400", () ->
+                    assertEquals(400, response.getStatusCode(),
+                            "Код ответа не совпал с ожидаемым. Ответ: " + responseBody)
+            );
     }
 }
